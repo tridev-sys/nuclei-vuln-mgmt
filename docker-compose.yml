@@ -32,7 +32,6 @@ services:
       - -update-templates
       - -update-template-dir
       - /opt/nuclei-templates
-      - -disable-update-check
     volumes:
       - nuclei-templates:/opt/nuclei-templates
 
