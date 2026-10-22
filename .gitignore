@@ -3,3 +3,6 @@ envs/
 reports/
 targets/*.txt
 !targets/example.txt
+
+# local Claude config, keep out of the repo
+.claude/
