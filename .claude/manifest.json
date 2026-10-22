@@ -1,0 +1,19 @@
+{
+  "name": "nuclei-vuln-mgmt",
+  "description": "Containerized nuclei vulnerability scanner for web apps and private networks",
+  "version": "0.1.0",
+  "nuclei_version": "v3.11.1",
+  "go_version": "1.26",
+  "base_image": "gcr.io/distroless/static-debian12:nonroot",
+  "services": {
+    "nuclei-update": { "profile": "maintenance" },
+    "nuclei-scan": {}
+  },
+  "entrypoints": {
+    "build": "docker compose build",
+    "update": "docker compose --profile maintenance run --rm nuclei-update",
+    "scan": "TARGET_FILE=<file> docker compose run --rm nuclei-scan"
+  },
+  "env_file": ".env.example",
+  "repository": "https://github.com/tridev-sys/nuclei-vuln-mgmt"
+}
