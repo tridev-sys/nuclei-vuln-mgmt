@@ -1,0 +1,6 @@
+# One host, IP, or URL per line. Lines starting with # are ignored.
+# These are documentation addresses (RFC 5737 / RFC 2606), not real targets.
+https://app.example.com
+https://api.example.com
+192.0.2.10
+198.51.100.25

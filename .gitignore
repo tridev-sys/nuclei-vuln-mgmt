@@ -1,0 +1,5 @@
+.env
+envs/
+reports/
+targets/*.txt
+!targets/example.txt

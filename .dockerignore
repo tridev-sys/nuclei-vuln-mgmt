@@ -1,0 +1,9 @@
+.git
+.env
+.env.*
+!.env.example
+envs
+reports
+targets/*.txt
+!targets/example.txt
+README.md

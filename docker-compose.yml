@@ -1,0 +1,74 @@
+x-scanner: &scanner
+  build:
+    context: .
+    args:
+      GO_VERSION: ${GO_VERSION:-1.26}
+      NUCLEI_VERSION: ${NUCLEI_VERSION:-v3.11.1}
+  image: nuclei-scanner:${NUCLEI_VERSION:-v3.11.1}
+  user: "65532:65532"
+  read_only: true
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+  pids_limit: 256
+  mem_limit: ${MEM_LIMIT:-2g}
+  cpus: ${CPU_LIMIT:-2}
+  tmpfs:
+    - /home/nonroot:rw,noexec,nosuid,size=256m,uid=65532,gid=65532
+    - /tmp:rw,noexec,nosuid,size=128m
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+services:
+  # Pulls the latest templates into the shared volume. Run on a schedule.
+  nuclei-update:
+    <<: *scanner
+    profiles: ["maintenance"]
+    command:
+      - -update-templates
+      - -update-template-dir
+      - /opt/nuclei-templates
+      - -disable-update-check
+    volumes:
+      - nuclei-templates:/opt/nuclei-templates
+
+  # Scans the hosts/URLs in ./targets/${TARGET_FILE}. Pick the file per
+  # environment with an env file or -e TARGET_FILE=... on `docker compose run`.
+  nuclei-scan:
+    <<: *scanner
+    command:
+      - -list
+      - /targets/${TARGET_FILE:-example.txt}
+      - -templates
+      - /opt/nuclei-templates
+      - -severity
+      - ${SEVERITY:-low,medium,high,critical}
+      # DoS templates can take a production service down; never run them here.
+      - -exclude-tags
+      - dos
+      - -rate-limit
+      - ${RATE_LIMIT:-50}
+      - -concurrency
+      - ${CONCURRENCY:-25}
+      - -timeout
+      - "10"
+      - -retries
+      - "1"
+      # Interactsh sends callback traffic to a public OAST service, which
+      # leaks target details. Disable it for internal and cloud estates.
+      - -no-interactsh
+      - -disable-update-check
+      - -jsonl
+      - -output
+      - /reports/${REPORT_FILE:-results.jsonl}
+    volumes:
+      - nuclei-templates:/opt/nuclei-templates:ro
+      - ./targets:/targets:ro
+      - ./reports:/reports
+
+volumes:
+  nuclei-templates:
